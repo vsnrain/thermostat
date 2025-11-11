@@ -3,7 +3,7 @@
  * Jian Zhang <jzhang@ti.com>
  *
  *  Samsung K9F5616Q0C NAND chip driver for an OMAP16xx board
- * 
+ *
  * This file is based on the following u-boot file:
  *	common/cmd_nand.c
  *
@@ -33,14 +33,14 @@
 #define K9F5616_MFR		0xec
 #define K9F5616_ID		0x45
 
-#define ADDR_COLUMN		1          
-#define ADDR_PAGE		2             
+#define ADDR_COLUMN		1
+#define ADDR_PAGE		2
 #define ADDR_COLUMN_PAGE	3
 
 #define PAGE_SIZE		512
 
-static int nand_read_page(u_char *buf, ulong page_addr);
-static int nand_read_oob(u_char * buf, ulong page_addr);
+int nand_read_page(u_char *buf, ulong page_addr);
+int nand_read_oob(u_char * buf, ulong page_addr);
 
 /* JFFS2 512-byte-page ECC layout */
 static u_char ecc_pos[] = {0,1,2,3,6,7};
@@ -60,7 +60,7 @@ static int NanD_Command(unsigned char command)
 			ret_val = READ_NAND(NAND_ADDR);/* wait till ready */
   		} while((ret_val & 0x40) != 0x40);
  	}
- 	
+
  	NAND_WAIT_READY();
 	return 0;
 }
@@ -71,7 +71,7 @@ static int NanD_Address(int numbytes, unsigned long ofs)
  	int i;
 
  	NAND_CTL_SETALE(NAND_ADDR);
- 
+
 	if (numbytes == ADDR_COLUMN || numbytes == ADDR_COLUMN_PAGE)
 		WRITE_NAND_ADDRESS(ofs, NAND_ADDR);
 
@@ -99,16 +99,16 @@ int nand_chip()
 
  	if (NanD_Command(NAND_CMD_RESET)) {
  		printf("Err: RESET\n");
- 		NAND_DISABLE_CE();   
+ 		NAND_DISABLE_CE();
 		return 1;
 	}
- 
+
  	if (NanD_Command(NAND_CMD_READID)) {
  		printf("Err: READID\n");
  		NAND_DISABLE_CE();
 		return 1;
  	}
- 
+
  	NanD_Address(ADDR_COLUMN, 0);
 
  	mfr = READ_NAND(NAND_ADDR);
@@ -122,12 +122,12 @@ int nand_chip()
 /* read a block data to buf
  * return 1 if the block is bad or ECC error can't be corrected for any page
  * return 0 on sucess
- */ 
+ */
 int nand_read_block(unsigned char *buf, ulong block_addr)
 {
 	int i, offset = 0;
 	uchar oob_buf[16];
- 	
+
 	/* check bad block */
 	/* 0th and 5th words need be 0xffff */
 	if (nand_read_oob(oob_buf, block_addr) ||
@@ -149,7 +149,7 @@ int nand_read_block(unsigned char *buf, ulong block_addr)
 }
 
 /* read a page with ECC */
-static int nand_read_page(u_char *buf, ulong page_addr)
+int nand_read_page(u_char *buf, ulong page_addr)
 {
  	u_char ecc_code[6];
 	u_char ecc_calc[3];
@@ -158,7 +158,7 @@ static int nand_read_page(u_char *buf, ulong page_addr)
 	u16 val;
 	int cntr;
 
-	NAND_ENABLE_CE();   
+	NAND_ENABLE_CE();
 	NanD_Command(NAND_CMD_READ0);
 	NanD_Address(ADDR_COLUMN_PAGE, page_addr>>1);
 
@@ -190,7 +190,7 @@ static int nand_read_page(u_char *buf, ulong page_addr)
   			return 1;
  		}
 	}
-	
+
 	if ((oob_buf[eccvalid_pos] & 0xf0) != 0xf0) {
  		nand_calculate_ecc (buf + 256, &ecc_calc[0]);
 		if (nand_correct_data (buf + 256, &ecc_code[3], &ecc_calc[0]) == -1) {
@@ -204,11 +204,11 @@ static int nand_read_page(u_char *buf, ulong page_addr)
 
 /* read from the 16 bytes of oob data that correspond to a 512 byte page.
  */
-static int nand_read_oob(u_char *buf, ulong page_addr)
+int nand_read_oob(u_char *buf, ulong page_addr)
 {
 	u16 val;
 	int cntr;
-    	
+
   	NAND_ENABLE_CE();  /* set pin low */
 	NanD_Command(NAND_CMD_READOOB);
  	NanD_Address(ADDR_COLUMN_PAGE, page_addr>>1);

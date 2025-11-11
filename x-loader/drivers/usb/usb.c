@@ -24,28 +24,33 @@
 #include <asm/arch/cpu.h>        /* get chip and board defs */
 #include "usb.h"
 
+#define USB_FIFO_SIZE 512
+
 extern void udelay (unsigned long usecs);
 
 typedef int boot_os_fn (void);
 
 /* send a buffer via USB */
 int usb_send(unsigned char *buffer, unsigned int buffer_size)
-   {
-   int ret = 0;
+{
+    unsigned int sent = 0;
+    while (sent < buffer_size)
+    {
+        unsigned int chunk = (buffer_size - sent > USB_FIFO_SIZE) ? USB_FIFO_SIZE : (buffer_size - sent);
+        while (*peri_txcsr & MUSB_TXCSR_TXPKTRDY);
 
-   if (!(*peri_txcsr & MUSB_TXCSR_TXPKTRDY))
-       {
-       unsigned int cntr;
+        // Copy chunk to FIFO
+        unsigned int i;
+        for (i = 0; i < chunk; i++)
+            *bulk_fifo = buffer[sent + i];
 
-       for (cntr = 0; cntr < buffer_size; cntr++)
-           *bulk_fifo = buffer[cntr];
+        // Signal packet ready
+        *peri_txcsr |= MUSB_TXCSR_TXPKTRDY;
 
-       *peri_txcsr |= MUSB_TXCSR_TXPKTRDY;
-
-       ret = buffer_size;
-       }
-   return ret;
-   }
+        sent += chunk;
+    }
+   return sent;
+}
 
 ////////////////////
 
@@ -93,56 +98,88 @@ static void usb_code (unsigned int cmd, u32 code)
    usb_send (usb_outbuffer, ((unsigned char *) p_int) - usb_outbuffer);
    }
 
-void do_usb (void)
-   {
-   boot_os_fn *boot_fn;
-   int res;
-   u32 usb_inbuffer[512];
-   u32 total;
-   u8 *addr;
-   u32 bytes;
-   int size;
-   int cntr = 0;
+void do_usb (void){
+    boot_os_fn *boot_fn;
+    int res;
+    u32 usb_inbuffer[512];
+    u32 total;
+    u8 *addr;
+    u32 bytes;
+    int size;
+    int cntr = 0;
+    int i;
 
-   usb_msg (USBLOAD_CMD_FILE_REQ, "file req");
-   while(++cntr < 200000)  /* try for 1 second then bail out */
-       {
-       res = usb_recv ((u8 *) usb_inbuffer, sizeof (usb_inbuffer));
-       switch (usb_inbuffer[0])
-           {
-           case USBLOAD_CMD_FILE:
-               printf ("USBLOAD_CMD_FILE total = %d cmd = %c%c%c%c val = 0x%x val = 0x%x\n", 
-                       res, 
-                       ((char*)&usb_inbuffer[0])[0], ((char*)&usb_inbuffer[0])[1], ((char*)&usb_inbuffer[0])[2], ((char*)&usb_inbuffer[0])[3],
-                       usb_inbuffer[1],
-                       usb_inbuffer[2]);
-               total = usb_inbuffer[1];  /* get size and address */
-               addr = (u8 *) usb_inbuffer[2];
-               usb_code (USBLOAD_CMD_ECHO_SZ, total);
+    //u16 oob_buf[64 >> 1];
+    //static u8 blk[2048];
 
-               bytes = 0;
-               while (bytes < total)
-                   {
-                   size = usb_recv ((u8 *) usb_inbuffer, sizeof (usb_inbuffer));
-                   memcpy(addr, usb_inbuffer, size);
-                   addr += size;
-                   bytes += size;
-                   }
-               usb_code (USBLOAD_CMD_REPORT_SZ, total);  /* tell him we got this many bytes */
-               printf ("got file addr = 0x%x counter = %d\n", addr, cntr);
-               usb_msg (USBLOAD_CMD_FILE_REQ, "file req");  /* see if they have another file for us */
-               cntr = 0;
-               break;
-           case USBLOAD_CMD_JUMP:
-               printf ("USBLOAD_CMD_JUMP total = %d addr = 0x%x val = 0x%x\n", res, usb_inbuffer[0], usb_inbuffer[1]);
-               boot_fn = (boot_os_fn *) usb_inbuffer[1];
-               boot_fn();  /* go to u-boot and maybe kernel */
-               break;
-           default:
-               break;
-           }
-       udelay(10);  /* delay 10 us */
-       }
-       printf("USB done\n");
-       hang();
-   }
+    usb_msg (USBLOAD_CMD_FILE_REQ, "file req");
+    while(++cntr < 2000000) {
+        res = usb_recv ((u8 *) usb_inbuffer, sizeof (usb_inbuffer));
+        switch (usb_inbuffer[0]){
+
+            case USBLOAD_CMD_FILE:
+                printf ("USBLOAD_CMD_FILE total = %d cmd = %c%c%c%c val = 0x%x val = 0x%x\n",
+                        res,
+                        ((char*)&usb_inbuffer[0])[0], ((char*)&usb_inbuffer[0])[1], ((char*)&usb_inbuffer[0])[2], ((char*)&usb_inbuffer[0])[3],
+                        usb_inbuffer[1],
+                        usb_inbuffer[2]);
+                total = usb_inbuffer[1];  /* get size and address */
+                addr = (u8 *) usb_inbuffer[2];
+                usb_code (USBLOAD_CMD_ECHO_SZ, total);
+
+                bytes = 0;
+                while (bytes < total){
+                    size = usb_recv ((u8 *) usb_inbuffer, sizeof (usb_inbuffer));
+                    memcpy(addr, usb_inbuffer, size);
+                    addr += size;
+                    bytes += size;
+                }
+                usb_code (USBLOAD_CMD_REPORT_SZ, total);  /* tell him we got this many bytes */
+                printf ("got file addr = 0x%x counter = %d\n", addr, cntr);
+                usb_msg (USBLOAD_CMD_FILE_REQ, "file req");  /* see if they have another file for us */
+                cntr = 0;
+                break;
+
+            case USBLOAD_CMD_JUMP:
+                printf ("USBLOAD_CMD_JUMP total = %d addr = 0x%x val = 0x%x\n", res, usb_inbuffer[0], usb_inbuffer[1]);
+                boot_fn = (boot_os_fn *) usb_inbuffer[1];
+                boot_fn();  /* go to u-boot and maybe kernel */
+                break;
+            /*
+            case USBLOAD_CMD_NAND_READ:
+
+                (void) nand_chip();
+
+
+
+                if (nand_read_oob((unsigned char *)oob_buf, usb_inbuffer[1])
+                    || (oob_buf[0] & 0xff) != 0xff) {
+                    printf("Skipped bad block at 0x%x\n", usb_inbuffer[1]);
+                    usb_code (USBLOAD_CMD_NAND_FIN, 0xFF);
+                    break;
+                }
+
+                for (i = 0; i < 2048; i++)
+                    blk[i] = 0x00;
+
+                for (i=0; i<64; i++){
+                    nand_read_page(blk, usb_inbuffer[1] + i*2048);
+                    usb_send(blk, 2048);
+                }
+
+                //usb_nand_read_page_raw(blk, usb_inbuffer[1]);
+                //nand_read_page(blk, usb_inbuffer[1]);
+                //usb_send(blk, 2048);
+                usb_code (USBLOAD_CMD_NAND_FIN, 0x00);
+
+                break;
+            */
+            default:
+                break;
+        }
+            udelay(10);  /* delay 10 us */
+    }
+
+    printf("USB done\n");
+    hang();
+}

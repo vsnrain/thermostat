@@ -68,8 +68,8 @@
 #define omap_correct_data
 #define omap_calculate_ecc
 #elif CFG_NAND_ECC_4BIT
-#define ECC_SIZE		28 
-#define ECC_STEPS		28 
+#define ECC_SIZE		28
+#define ECC_STEPS		28
 
 extern enable_hwecc_bch4(uint32_t bus_width, int32_t mode);
 extern int omap_correct_data_bch4(uint8_t *dat, uint8_t *read_ecc, uint8_t *calc_ecc);
@@ -80,7 +80,7 @@ extern int omap_calculate_ecc_bch4(const uint8_t *dat, uint8_t *ecc_code);
 #define omap_calculate_ecc	omap_calculate_ecc_bch4
 #elif CFG_NAND_ECC_8BIT
 #define ECC_SIZE		52
-#define ECC_STEPS		52 
+#define ECC_STEPS		52
 
 extern void omap_enable_hwecc_bch8(uint32_t bus_width, int32_t mode);
 extern int omap_correct_data_bch8(uint8_t *dat, uint8_t *read_ecc, uint8_t *calc_ecc);
@@ -104,8 +104,8 @@ static inline void delay (unsigned long loops)
 					  "bne 1b":"=r" (loops):"0" (loops));
 }
 
-static int nand_read_page(u_char *buf, ulong page_addr);
-static int nand_read_oob(u_char * buf, ulong page_addr);
+int nand_read_page(u_char *buf, ulong page_addr);
+int nand_read_oob(u_char * buf, ulong page_addr);
 
 #ifdef CFG_NAND_ECC_1BIT
 static u_char ecc_pos[] =
@@ -114,9 +114,9 @@ static u_char ecc_pos[] =
 		56, 57, 58, 59, 60, 61, 62, 63};
 #elif CFG_NAND_ECC_4BIT
 static u_char ecc_pos[] =
-		{36, 37, 38, 39, 40, 41, 42, 
-		43, 44, 45, 46, 47, 48, 49, 
-		50, 51, 52, 53, 54, 55, 56, 
+		{36, 37, 38, 39, 40, 41, 42,
+		43, 44, 45, 46, 47, 48, 49,
+		50, 51, 52, 53, 54, 55, 56,
 		57, 58, 59, 60, 61, 62, 63};
 #elif CFG_NAND_ECC_8BIT
 static u_char ecc_pos[] =
@@ -124,9 +124,9 @@ static u_char ecc_pos[] =
 		15, 16, 17, 18, 19, 20, 21,
 		22, 23, 24, 25, 26, 27, 28,
 		29, 30, 31, 32, 33, 34, 35,
-		36, 37, 38, 39, 40, 41, 42, 
-		43, 44, 45, 46, 47, 48, 49, 
-		50, 51, 52, 53, 54, 55, 56, 
+		36, 37, 38, 39, 40, 41, 42,
+		43, 44, 45, 46, 47, 48, 49,
+		50, 51, 52, 53, 54, 55, 56,
 		57, 58, 59, 60, 61, 62, 63};
 #endif
 
@@ -247,7 +247,7 @@ int nand_chip()
 	case MT29F1G_MFR:
 		switch (id) {
 
-		case MT29F1G_ID:		
+		case MT29F1G_ID:
 		case MT29F2G_ID:		return (supported);
 		default:				return (!supported);
 
@@ -300,10 +300,10 @@ int nand_read_block(unsigned char *buf, ulong block_addr)
 }
 static int count;
 /* read a page with ECC */
-static int nand_read_page(u_char *buf, ulong page_addr)
+int nand_read_page(u_char *buf, ulong page_addr)
 {
 #ifdef ECC_CHECK_ENABLE
-	/* increased size of ecc_code and ecc_calc to match the OOB size, 
+	/* increased size of ecc_code and ecc_calc to match the OOB size,
 	   as is done in the kernel */
 	u_char ecc_code[OOB_SIZE];
 	u_char ecc_calc[OOB_SIZE];
@@ -379,7 +379,7 @@ static int nand_read_page(u_char *buf, ulong page_addr)
 
 /* read from the 16 bytes of oob data that correspond to a 512 / 2048 byte page.
  */
-static int nand_read_oob(u_char *buf, ulong page_addr)
+int nand_read_oob(u_char *buf, ulong page_addr)
 {
 	int cntr;
 	int len;

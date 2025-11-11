@@ -59,6 +59,8 @@ static volatile u8  *bulk_fifo  = (volatile u8  *) OMAP34XX_USB_FIFO(BULK_ENDPOI
 #define USBLOAD_CMD_ECHO_SZ PACK4('U', 'S', 'B', 'n')  /* echo file size */
 #define USBLOAD_CMD_REPORT_SZ PACK4('U', 'S', 'B', 'o')  /* report file size */
 #define USBLOAD_CMD_MESSAGE PACK4('U', 'S', 'B', 'm')  /* message for debug */
+#define USBLOAD_CMD_NAND_READ PACK4('U', 'S', 'B', 'r')
+#define USBLOAD_CMD_NAND_FIN PACK4('x', 'F', 'I', 'N')
 
 #endif
 
