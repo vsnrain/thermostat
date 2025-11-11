@@ -59,7 +59,27 @@
     <connect wifi>
     ncat -v <ip> 1337
 
-# 3 custom backend
+# 4 persistant dropbear SSH server
+###################################
+
+.. code-block:: bash
+
+    cp /oldroot/bin/dropbear /usr/bin/dropbear
+    ln -s /usr/bin/dropbear /usr/bin/dropbearkey
+    mkdir -p /etc/dropbear/
+    dropbearkey -t ed25519 -f /etc/dropbear/dropbear_ed25519_host_key
+    mount -t devpts devpts /dev/pts
+
+    echo "#!/bin/ash"                       > /etc/init.d/dropbear
+    echo "mount -t devpts devpts /dev/pts" >> /etc/init.d/dropbear
+    echo "dropbear &"                      >> /etc/init.d/dropbear
+    chmod +x /etc/init.d/dropbear
+
+    echo "\${INITDIR}/dropbear"            >>  /etc/init.d/rcS
+
+    passwd root
+
+# 5 custom backend
 #################################
 .. code-block:: bash
 
