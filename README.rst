@@ -1,63 +1,75 @@
 # 0 disclaimer
 #################################
 
-not affiliated with nest labs or google.
-rejected for fulu bounty
+.. line-block::
+    not affiliated with nest labs or google
+    rejected for fulu bounty
 
-Proof of concept with device SSH access and custom backend
+    proof of concept with device SSH access and custom backend
 
-check releases for prebuilt binaries
+    check releases for prebuilt binaries
 
-python3 boot.py x-load.bin u-boot.bin uInitrd
-<hold 10 sec>
-<wait boot>
-<connect wifi>
-ncat -v <ip> 1337
+.. code-block:: bash
 
-feel free to donate if you would like non-US residents to be rewarded for their work
-BTC bc1qd2ed02lwket6gnjmmhjdagexjgn5wejnugksdk
+    python3 boot.py x-load.bin u-boot.bin uInitrd
+    <hold 10 sec>
+    <wait boot>
+    <connect wifi>
+    ncat -v <ip> 1337
+
+.. line-block::
+    feel free to donate directly if you would like non-US residents to be rewarded for their work too
+    BTC bc1qd2ed02lwket6gnjmmhjdagexjgn5wejnugksdk
 
 # 1 building x-load
 #################################
+.. code-block:: bash
 
-# changes:
-# - increase timeout to 20s
-# - add feature to dump nand through x-loader
+    # changes:
+    # - increase timeout to 20s
+    # - add feature to dump nand through x-loader
+    cd x-loader
+    chmod +x tools/setlocalversion
+    chmod +x tools/scripts/make-asm-offsets
 
-chmod +x tools/setlocalversion
-chmod +x tools/scripts/make-asm-offsets
-
-make j49-usb-loader_config
-make
+    make j49-usb-loader_config
+    make
 
 # 2 building u-boot
 #################################
+.. code-block:: bash
 
-# changes:
-# - add initrd to boot options
+    # changes:
+    # - add initrd to boot options
+    cd u-boot
+    export CROSS_COMPILE=arm-none-eabi-
+    export PATH=/opt/gcc-arm-none-eabi-4_9-2015q3/bin:$PATH
 
-export CROSS_COMPILE=arm-none-eabi-
-export PATH=/opt/gcc-arm-none-eabi-4_9-2015q3/bin:$PATH
+    make j49-usb-loader_config
+    make j49_config
+    make
 
-make j49-usb-loader_config
-make j49_config
-make
-
-# 3 root
+# 3 get root
 #################################
-python3 boot.py x-load.bin u-boot.bin uInitrd
-<hold 10 sec>
-<wait boot>
-<connect wifi>
-ncat -v <ip> 1337
+.. code-block:: bash
+
+    python3 boot.py x-load.bin u-boot.bin uInitrd
+    <hold 10 sec>
+    <wait boot>
+    <connect wifi>
+    ncat -v <ip> 1337
 
 # 3 custom backend
 #################################
+.. code-block:: bash
 
-(on device)
-vi /nestlabs/etc/client.config
-set cloudregisterurl to your local server
+    (on device)
+    vi /nestlabs/etc/client.config
+    (set cloudregisterurl to your local server)
 
-cd ./server
-pip3 install fastapi uvicorn python-multipart
-python3 main.py
+.. code-block:: bash
+
+    (on local server)
+    cd ./server
+    pip3 install fastapi uvicorn python-multipart
+    python3 main.py
