@@ -230,9 +230,9 @@
  * Enable CONFIG_MUSB_HCD for Host functionalities MSC, keyboard
  * Enable CONFIG_MUSB_UDD for Device functionalities.
  */
-#undef  CONFIG_USB_OMAP3
-#undef  CONFIG_MUSB_HCD
-#undef  CONFIG_MUSB_UDC
+#define  CONFIG_USB_OMAP3
+#undef   CONFIG_MUSB_HCD
+#define  CONFIG_MUSB_UDC
 
 #ifdef CONFIG_USB_OMAP3
 
@@ -547,16 +547,19 @@
 						   CONFIG_SYS_NANDBOOT1_ENV_DEV)
 
 /*
- * The default boot command
+ * The default boot command lol
  */
+#define CONFIG_ENV_IS_NOWHERE 1
 #define CONFIG_BOOTCOMMAND												\
-	"run nandboot0 || run nandboot1 || run mmcboot || reset"
+	"nboot.i  0x81000000 0 0x400000 && setenv bootargs root=/dev/ram0 rw ramdisk_size=8192 logo.nologo=1 fbcon=map:0 console=tty1 && run addmodel && bootm 0x81000000 0x81400000"
+
+// root=/dev/mtdblock7 rootfstype=jffs2
+
 
 /*
  * The alternate default boot command (see CONFIG_BOOTCOUNT_LIMIT)
  */
-#define CONFIG_SYS_ALTBOOTCOMMAND					   					\
-	"run nandboot1 || run nandboot0 || run mmcboot || reset"
+#define CONFIG_SYS_ALTBOOTCOMMAND CONFIG_BOOTCOMMAND
 
 /*
  * Default address at which to load images when referenced by
@@ -585,7 +588,7 @@
 /*
  * Command to "reset" the U-Boot environment.
  *
- * Primary and secondary are contiguous so can both be erased at the same 
+ * Primary and secondary are contiguous so can both be erased at the same
  * time.  There are six blocks total, two extra for each region as replacements
  * if blocks go bad.  Therefore to ensure the erase clears the environment data
  * in all cases the erase size is 0xc0000.
@@ -640,11 +643,11 @@
  * to set the environment variable as needed.
  */
 #if defined (NEST_BUILD_CONFIG_RELEASE) || (NEST_BUILD_CONFIG_COMPLIANCE)
-    #define CONFIG_BOOTDELAY				0
-    #define CONFIG_BOOTDELAY_STR            "0"
-#else
     #define CONFIG_BOOTDELAY				1
     #define CONFIG_BOOTDELAY_STR            "1"
+#else
+    #define CONFIG_BOOTDELAY				3
+    #define CONFIG_BOOTDELAY_STR            "3"
 #endif
 
 
@@ -1069,7 +1072,7 @@
  *        Image
  *  -------------------------------------------------------------------------
  *  env0  Primary U-Boot       384 KiB      3      26    0x00340000 3.250 MiB
- *        Environment [1]     
+ *        Environment [1]
  *  -------------------------------------------------------------------------
  *  env1  Secondary U-Boot     384 KiB      3      29    0x003A0000 3.625 MiB
  *        Environment [1]
@@ -1078,11 +1081,11 @@
  *  [1] Even though we reserve 384 KiB and 3 erase blocks of space
  *      for the primary and secondary U-Boot environment, we only
  *      actually use 128 KiB and 1 erase block of it. We need to use
- *      at least one erase block and even though it is excessive, 
+ *      at least one erase block and even though it is excessive,
  *      anything more is all the more so.
  */
 
-#define CONFIG_ENV_IS_IN_NAND			1
+//#define CONFIG_ENV_IS_IN_NAND			1
 
 #define CONFIG_SYS_ENV_SECT_SIZE(n)		((n) * CONFIG_SYS_NAND_BLOCK_SIZE)
 #define	CONFIG_SYS_ENV_SECT_OFFSET(n)	((n) * CONFIG_SYS_NAND_BLOCK_SIZE)
@@ -1098,8 +1101,8 @@
 #define	CONFIG_ENV_SIZE					CONFIG_SYS_ENV_SECT_SIZE(1)
 #define CONFIG_ENV_RANGE                CONFIG_SYS_ENV_SECT_SIZE(3)
 
-/* 
- * Number of times to attempt to write environment before declaring a 
+/*
+ * Number of times to attempt to write environment before declaring a
  * block bad.
  */
 #define CONFIG_ENV_TRY_COUNT            3
@@ -1134,7 +1137,7 @@
 										 CONFIG_ENV_SIZE_REDUND)
 #else
 # define CONFIG_SYS_MALLOC_EXTRA_LEN	(CONFIG_ENV_SIZE)
-#endif /* defined(CONFIG_ENV_SIZE_REDUND) */ 
+#endif /* defined(CONFIG_ENV_SIZE_REDUND) */
 
 # define CONFIG_SYS_MALLOC_LEN			ROUND(CONFIG_SYS_MALLOC_EXTRA_LEN + \
 											  (256 << 10),					\

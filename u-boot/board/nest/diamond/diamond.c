@@ -420,7 +420,7 @@ static void diamond_development_mux_init(void)
 
 	// Assign MCBSP1_DX to GPIO_158 used as a push-pull, active-high
 	// output to the ZigBee power supply.
- 	 
+
  	MUX_VAL(CP(MCBSP1_DX),      (IDIS | PTD | DIS | M4));   // GPIO_158
 }
 
@@ -527,10 +527,10 @@ static void diamond_prototype_mux_init(void)
 
 	// Assign MCBSP1_DX to GPIO_158 used as a push-pull, active-high
 	// output to the ZigBee power supply.
- 	 
+
  	MUX_VAL(CP(MCBSP1_DX),      (IDIS | PTD | DIS | M4));   // GPIO_158
 }
-	
+
 static void diamond_prototype_gpio_init(void)
 {
 	diamond_generic_gpio_init();
@@ -614,10 +614,10 @@ static void diamond_evt_mux_init(void)
 
 	// Assign MCBSP1_DX to GPIO_158 used as a push-pull, active-high
  	// output to the ZigBee power supply.
- 	 
+
  	MUX_VAL(CP(MCBSP1_DX),      (IDIS | PTD | DIS | M4));   // GPIO_158
 }
-	
+
 static void diamond_evt_gpio_init(void)
 {
 	diamond_generic_gpio_init();
@@ -699,10 +699,10 @@ static void diamond_dvt_mux_init(void)
 
 	// Assign MCBSP1_DX to GPIO_158 used as a push-pull, active-high
 	// output to the ZigBee power supply.
- 	 
+
  	MUX_VAL(CP(MCBSP1_DX),      (IDIS | PTD | DIS | M4));   // GPIO_158
 }
-	
+
 static void diamond_dvt_gpio_init(void)
 {
 	diamond_generic_gpio_init();
@@ -737,7 +737,7 @@ static void diamond_pvt_mux_init(void)
 {
 	diamond_dvt_mux_init();
 }
-	
+
 static void diamond_pvt_gpio_init(void)
 {
 	diamond_dvt_gpio_init();
@@ -778,7 +778,7 @@ static void j49_prototype_mux_init(void)
 
 	MUX_VAL(CP(CAM_D10),     (IDIS | PTD | DIS | M4));	// GPIO_109
 
-	MUX_VAL(CP(MCSPI1_CLK),  (IDIS | PTD | DIS | M0));	// LCD_SPI_CLK 
+	MUX_VAL(CP(MCSPI1_CLK),  (IDIS | PTD | DIS | M0));	// LCD_SPI_CLK
 	MUX_VAL(CP(MCSPI1_SIMO), (IDIS | PTD | DIS | M0));	// LCD_SPI_MOSI
 	MUX_VAL(CP(MCSPI1_SOMI), (IEN  | PTD | DIS | M0));	// LCD_SPI_MISO
 	MUX_VAL(CP(MCSPI1_CS0),	 (IDIS | PTD | EN  | M0));	// LCD_SPI_CS_L
@@ -787,12 +787,12 @@ static void j49_prototype_mux_init(void)
 	MUX_VAL(CP(MCSPI2_SIMO), (IDIS | PTD | DIS | M0));	// ZIG_SPI_MOSI
 	MUX_VAL(CP(MCSPI2_SOMI), (IEN  | PTD | EN  | M0));	// ZIG_SPI_MISO
 	MUX_VAL(CP(MCSPI2_CS0),	 (IDIS | PTD | DIS | M0));	// ZIG_SPI_CS_L
-	MUX_VAL(CP(MCSPI2_CS1),  (IEN  | PTU | EN  | M4));	// ZIG_INT_L 
+	MUX_VAL(CP(MCSPI2_CS1),  (IEN  | PTU | EN  | M4));	// ZIG_INT_L
 	MUX_VAL(CP(MCBSP3_DX),   (IEN  | PTD | DIS | M4));	// ZIG_PTI_EN
 	MUX_VAL(CP(MCBSP3_DR),   (IDIS | PTD | DIS | M7));	// Unused
 	MUX_VAL(CP(MCBSP3_CLKX), (IDIS | PTD | DIS | M7));	// Unused
 	MUX_VAL(CP(MCBSP3_FSX),	 (IEN  | PTD | DIS | M1));	// ZIG_PIT_DATA
-	MUX_VAL(CP(MCBSP1_CLKR), (IDIS | PTD | EN  | M7));	// BP_PRIMARY_LDO_DISABLE 
+	MUX_VAL(CP(MCBSP1_CLKR), (IDIS | PTD | EN  | M7));	// BP_PRIMARY_LDO_DISABLE
 
 	MUX_VAL(CP(ETK_D14_ES2), (IDIS | PTD | DIS | M7));	// Unused
 	MUX_VAL(CP(ETK_D15_ES2), (IDIS | PTD | DIS | M7));	// Unused
@@ -807,9 +807,9 @@ static void j49_prototype_mux_init(void)
 
 	// ZIG_PWR_EN set to high Z for now, Andrea to investigate further
 
-	MUX_VAL(CP(MCBSP2_DX),	 (IDIS | PTD | DIS | M7));	
+	MUX_VAL(CP(MCBSP2_DX),	 (IDIS | PTD | DIS | M7));
 }
-	
+
 static void j49_prototype_gpio_init(void)
 {
 	diamond_generic_gpio_init();
@@ -954,7 +954,7 @@ int misc_init_r(void)
 	} else if (model.product == j49_product) {
 		if (model.revision == 0) {
 			diamond_model = &diamond_models[J49_BOARD_PROTOTYPE_MODEL_INDEX];
-			
+
 		} else if (model.revision == 1) {
 			diamond_model = &diamond_models[J49_BOARD_EVT_MODEL_INDEX];
 
@@ -1007,12 +1007,12 @@ int misc_init_r(void)
 
 	/* Fix bootdelay if necessary */
 	bootdelay_str = getenv(bootdelay_identifier_key);
-	if ( (bootdelay_str == NULL) || 
+	if ( (bootdelay_str == NULL) ||
 		 (strcmp(bootdelay_str, CONFIG_BOOTDELAY_STR) != 0) ) {
 		setenv(bootdelay_identifier_key, CONFIG_BOOTDELAY_STR);
 		dirty = 1;
 	}
-    
+
 	if (diamond_model != NULL) {
 		if (diamond_model->mux_init) {
 			diamond_model->mux_init();
@@ -1045,7 +1045,7 @@ int misc_init_r(void)
 	putc('\n');
 
 #if !defined(NEST_BUILD_CONFIG_RELEASE) && !defined(NEST_BUILD_CONFIG_COMPLIANCE)
-	printf("Build: " NEST_BUILD_CONFIG "\n");
+	printf("Build: RELEASE\n");
 #endif
 
 #ifdef CONFIG_DRIVER_OMAP34XX_I2C
@@ -1055,7 +1055,7 @@ int misc_init_r(void)
 	dieid_num_r();
 
 	if (dirty) {
-		saveenv();
+		//saveenv();
 	}
 
 #if defined(CONFIG_PREBOOT)
@@ -1293,7 +1293,7 @@ void add_panic(const char *panic_val)
     add_bootarg(panic_key, panic_val);
 }
 
-/* 
+/*
  * This is where we can do board specific things right before booting
  * the image.
  */
